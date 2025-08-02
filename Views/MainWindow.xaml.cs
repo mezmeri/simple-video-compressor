@@ -1,5 +1,7 @@
 ﻿using Microsoft.Win32;
 using SimpleVideoCompressor.Controllers;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 
 namespace SimpleVideoCompressor
@@ -39,18 +41,20 @@ namespace SimpleVideoCompressor
             }
         }
 
-        private void btn_StartCompression_Click(object sender, RoutedEventArgs e)
+        private async void btn_StartCompression_Click(object sender, RoutedEventArgs e)
         {
             btn_FilePathUser.IsEnabled = false;
             btn_FileUploadUser.IsEnabled = false;
             btn_StartCompression.IsEnabled = false;
-            controller.StartCompression();
 
-            if (controller.FileUploadPathUri != null)
+            // Wait for the thing to finish
+            await controller.StartCompression();
+
+            string compressedVideoPath = Path.Combine(controller.UploadPathUri, controller.CompressedVideoFileName);
+
+            if (File.Exists(compressedVideoPath))
             {
-                OpenFileDialog dialog = new OpenFileDialog();
-                dialog.ShowDialog();
-                dialog.DefaultDirectory = controller.FileUploadPathUri;
+                Process.Start("explorer.exe", "/select, \"" + compressedVideoPath + "\"");
 
                 btn_FilePathUser.IsEnabled = true;
                 btn_FileUploadUser.IsEnabled = true;

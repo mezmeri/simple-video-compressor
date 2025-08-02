@@ -13,18 +13,13 @@ namespace SimpleVideoCompressor.Controllers
         /// The path to the compressed file.
         /// </summary>
         public string? FileUploadPathUri { get; set; }
+        public string? CompressedVideoFileName { get; set; }
 
-        public bool StartCompression()
+        public async Task StartCompression()
         {
             File file = new(FilePathNameUri, DirectFileName);
-            FileUploadPathUri = VideoCompressor.CompressMedia_H265_HEVC(file, UploadPathUri);
-            if(FileUploadPathUri == null)
-            {
-                return false;
-            } else
-            {
-                return true;
-            }
+            CompressedVideoFileName = VideoCompressor.GenerateFileName();
+            FileUploadPathUri = await VideoCompressor.CompressMedia_H265_HEVC(file, UploadPathUri, CompressedVideoFileName);
         }
     }
 }

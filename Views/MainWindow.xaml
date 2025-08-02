@@ -5,13 +5,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:SimpleVideoCompressor"
-    xmlns:compressionstyle="clr-namespace:SimpleVideoCompressor.Collections"
     mc:Ignorable="d"
     Title="Simple Video Compressor"
     Height="200"
     Width="500"
     WindowStartupLocation="CenterScreen"
-    ResizeMode="NoResize" Icon="/Resources/icon.png">
+    ResizeMode="NoResize">
     <Grid
         Margin="10"
         Height="Auto">

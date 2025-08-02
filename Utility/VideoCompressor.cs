@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.IO;
 
 namespace SimpleVideoCompressor.Utility
 {
@@ -10,24 +11,23 @@ namespace SimpleVideoCompressor.Utility
             return guid.ToString();
         }
 
-        public static string CompressMedia_H265_HEVC(Models.File file, string uploadPathUri)
+        public static async Task<string> CompressMedia_H265_HEVC(Models.File file, string uploadPathUri, string outputFileName)
         {
             uploadPathUri = uploadPathUri.Replace("\\", "/");
-            string fileName = GenerateFileName();
             try
             {
                 using (Process process = new Process())
                 {
-                    string? ffmpegPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+                    string? ffmpegPath = Path.Combine(Environment.CurrentDirectory, "Resources", "Rendering", "ffmpeg", "ffmpeg.exe");
                     process.StartInfo.FileName = ffmpegPath.Replace("\\", "/");
 
-                    process.StartInfo.Arguments = $"-i \"{file.PathNameUri}/{file.DirectName}\" -c:v hevc {uploadPathUri}/{fileName}.mp4";
+                    process.StartInfo.Arguments = $"-i \"{file.PathNameUri}/{file.DirectName}\" -c:v hevc {uploadPathUri}/{outputFileName}.mp4";
 
                     process.StartInfo.CreateNoWindow = false;
                     process.StartInfo.UseShellExecute = false;
 
                     process.Start();
-                    process.WaitForExit();
+                    await process.WaitForExitAsync();
 
                     if(process.ExitCode == 0)
                     {
