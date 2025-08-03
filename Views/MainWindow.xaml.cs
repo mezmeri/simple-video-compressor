@@ -8,12 +8,12 @@ namespace SimpleVideoCompressor
 {
     public partial class MainWindow : Window
     {
-        private MainWindowController controller;
+        private MainWindowViewModel _viewModel;
         public MainWindow()
         {
             InitializeComponent();
-            controller = new();
-            DataContext = controller;
+            _viewModel = new();
+            DataContext = _viewModel;
         }
 
         private void btn_UploadedFile_Click(object sender, RoutedEventArgs e)
@@ -24,8 +24,8 @@ namespace SimpleVideoCompressor
             if (dialogResult == true)
             {
                 textblock_UserFile.Text = dialog.SafeFileName;
-                controller.FilePathNameUri = System.IO.Path.GetDirectoryName(dialog.FileName);
-                controller.DirectFileName = dialog.SafeFileName;
+                _viewModel.FilePathNameUri = System.IO.Path.GetDirectoryName(dialog.FileName);
+                _viewModel.DirectFileName = dialog.SafeFileName;
             }
         }
 
@@ -37,7 +37,7 @@ namespace SimpleVideoCompressor
             if (dialogResult == true)
             {
                 textblock_UserFilePath.Text = dialog.FolderName;
-                controller.UploadPathUri = dialog.FolderName;
+                _viewModel.UploadPathUri = dialog.FolderName;
             }
         }
 
@@ -47,25 +47,28 @@ namespace SimpleVideoCompressor
             btn_FileUploadUser.IsEnabled = false;
             btn_StartCompression.IsEnabled = false;
 
-            // Wait for the thing to finish
-            await controller.StartCompression();
-
-            string compressedVideoPath = Path.Combine(controller.UploadPathUri, controller.CompressedVideoFileName);
-
-            if (File.Exists(compressedVideoPath))
+            try
             {
-                Process.Start("explorer.exe", "/select, \"" + compressedVideoPath + "\"");
+                await _viewModel.StartCompression();
+                string compressedVideoPath = Path.Combine(_viewModel.UploadPathUri, _viewModel.CompressedVideoFileName);
+                string fullPath = Path.GetFullPath(compressedVideoPath);
+                Process.Start("explorer.exe", $"/select,\"{fullPath}.mp4\"");
+            }
+            catch (Exception ex)
+            {
 
+                MessageBox.Show($"Something went wrong. Exception log: {ex.Message}");
+                throw;
+            }
+            finally
+            {
                 btn_FilePathUser.IsEnabled = true;
                 btn_FileUploadUser.IsEnabled = true;
                 btn_StartCompression.IsEnabled = true;
-
                 textblock_UserFile.Text = "";
                 textblock_UserFilePath.Text = "";
-            } else
-            {
-                MessageBox.Show("An error occured.");
             }
+
         }
     }
 }

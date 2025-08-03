@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.IO;
 
-namespace SimpleVideoCompressor.Utility
+namespace SimpleVideoCompressor.Services
 {
-    public class VideoCompressor
+    public class VideoCompressorService
     {
         public static string GenerateFileName()
         {
