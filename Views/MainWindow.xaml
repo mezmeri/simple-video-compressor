@@ -7,101 +7,61 @@
     xmlns:local="clr-namespace:SimpleVideoCompressor"
     mc:Ignorable="d"
     Title="Simple Video Compressor"
-    Height="200"
-    Width="500"
-    WindowStartupLocation="CenterScreen"
-    ResizeMode="NoResize">
-    <Grid
-        Margin="10"
-        Height="Auto">
+    Height="350"
+    Width="600"
+    WindowStartupLocation="CenterScreen">
 
-        <Grid
-            Width="Auto">
-            <Grid.RowDefinitions>
-                <RowDefinition
-                    Height="Auto" />
-                <RowDefinition
-                    Height="Auto" />
-                <RowDefinition
-                    Height="Auto" />
-            </Grid.RowDefinitions>
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-            <StackPanel
-                Grid.Row="0"
-                Margin="0,0,0,10">
-                <Label
-                    Padding="0"
-                    FontWeight="Bold"
-                    Margin="0,0,0,10"
-                    Content="Upload file*" />
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock FontSize="18" FontWeight="Bold" Text="Simple Video Compressor" />
+            <TextBlock Foreground="Gray" Text="by mezmeri" />
+        </StackPanel>
 
-                <StackPanel
-                    Orientation="Horizontal">
-                    <TextBox
-                        x:Name="textblock_UserFile"
-                        Margin="0,0,10,0"
-                        Width="200" />
-                    <Button
-                        x:Name="btn_FileUploadUser"
-                        Content="..."
-                        Width="50"
-                        Click="btn_UploadedFile_Click" />
-                </StackPanel>
-            </StackPanel>
+        <ListView 
+            Grid.Row="1" 
+            x:Name="VideoListView"
+            AllowDrop="True" 
+            Drop="VideoListView_Drop"
+            Background="#F9F9F9"
+            BorderBrush="#CCCCCC"
+            BorderThickness="1"
+            ItemsSource="{Binding VideoFiles}"
+            ClipToBounds="True"
+            IsManipulationEnabled="False"
+            IsTextSearchEnabled="False" KeyUp="VideoListView_KeyUp_DeleteFileFromList">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="File name" Width="220" DisplayMemberBinding="{Binding FileName}" />
+                    <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding FileSizeBefore}" />
+                    <GridViewColumn Header="Status" Width="150" DisplayMemberBinding="{Binding VideoStatus}" />
+                </GridView>
+            </ListView.View>
+        </ListView>
 
-            <StackPanel
-                Grid.Row="1"
-                Margin="0,0,0,10">
-                <Label
-                    Content="Destination folder*"
-                    FontWeight="Bold"
-                    Padding="0"
-                    Margin="0,0,0,10" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+            <Button 
+                Content="Open video folder" 
+                Padding="15,8" 
+                FontWeight="SemiBold"
+                Background="Gray"
+                Foreground="White"
+                Click="Button_Click_OpenVideosFolder"/>
 
-                <StackPanel
-                    Orientation="Horizontal">
-                    <TextBox
-                        x:Name="textblock_UserFilePath"
-                        Margin="0,0,10,0"
-                        Width="200" />
-                    <Button
-                        x:Name="btn_FilePathUser"
-                        Content="..."
-                        Width="50"
-                        Click="btn_FilePathUser_Click" />
-                </StackPanel>
-            </StackPanel>
+            <Button 
+                Content="Compress all" 
+                Padding="15,8" 
+                FontWeight="SemiBold"
+                Background="#007ACC" 
+                Foreground="White" 
+                Margin="10,0,0,0"
+                Click="Button_CompressAll"/>
 
-            <StackPanel
-                Grid.Row="2">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition
-                            Width="*" />
-                        <ColumnDefinition
-                            Width="10" />
-                        <ColumnDefinition
-                            Width="100" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition
-                            Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <Button
-                        x:Name="btn_StartCompression"
-                        Grid.Column="2"
-                        Content="Start"
-                        Height="20"
-                        VerticalAlignment="Bottom"
-                        Click="btn_StartCompression_Click" />
-                    <ProgressBar
-                        x:Name="progressbar_CompressionProgress"
-                        Grid.Column="0"
-                        Visibility="Collapsed" />
-                </Grid>
-            </StackPanel>
-
-        </Grid>
+        </StackPanel>
     </Grid>
 </Window>

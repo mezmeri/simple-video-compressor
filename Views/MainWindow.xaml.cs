@@ -1,5 +1,6 @@
-﻿using Microsoft.Win32;
-using SimpleVideoCompressor.Controllers;
+﻿using SimpleVideoCompressor.Models;
+using SimpleVideoCompressor.Services;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -8,67 +9,86 @@ namespace SimpleVideoCompressor
 {
     public partial class MainWindow : Window
     {
-        private MainWindowViewModel _viewModel;
+        private readonly VideoCompressorService _videoCompressorService;
+        public ObservableCollection<VideoFile> VideoFiles { get; } = new();
+
         public MainWindow()
         {
             InitializeComponent();
-            _viewModel = new();
-            DataContext = _viewModel;
+            VideoListView.ItemsSource = VideoFiles;
+            _videoCompressorService = new VideoCompressorService();
         }
 
-        private void btn_UploadedFile_Click(object sender, RoutedEventArgs e)
+        private async void Button_CompressAll(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Multiselect = false;
-            bool? dialogResult = dialog.ShowDialog();
-            if (dialogResult == true)
+            if (VideoFiles.Count == 0)
             {
-                textblock_UserFile.Text = dialog.SafeFileName;
-                _viewModel.FilePathNameUri = System.IO.Path.GetDirectoryName(dialog.FileName);
-                _viewModel.DirectFileName = dialog.SafeFileName;
-            }
-        }
-
-        private void btn_FilePathUser_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFolderDialog dialog = new OpenFolderDialog();
-
-            bool? dialogResult = dialog.ShowDialog();
-            if (dialogResult == true)
+                MessageBox.Show($"Cannot compress anything because you haven't added any files.",
+                        "Video files missing",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+            } else
             {
-                textblock_UserFilePath.Text = dialog.FolderName;
-                _viewModel.UploadPathUri = dialog.FolderName;
+                await _videoCompressorService.CompressFiles(VideoFiles);
             }
         }
 
-        private async void btn_StartCompression_Click(object sender, RoutedEventArgs e)
+        private void VideoListView_Drop(object sender, DragEventArgs e)
         {
-            btn_FilePathUser.IsEnabled = false;
-            btn_FileUploadUser.IsEnabled = false;
-            btn_StartCompression.IsEnabled = false;
-
-            try
+            string[] allowedExtensions = { ".mp4", ".mov", ".avi", ".wmv" };
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                await _viewModel.StartCompression();
-                string compressedVideoPath = Path.Combine(_viewModel.UploadPathUri, _viewModel.CompressedVideoFileName);
-                string fullPath = Path.GetFullPath(compressedVideoPath);
-                Process.Start("explorer.exe", $"/select,\"{fullPath}.mp4\"");
-            }
-            catch (Exception ex)
-            {
+                string[] files = (string[]) e.Data.GetData(DataFormats.FileDrop);
+                foreach (string filePath in files)
+                {
+                    FileInfo fileInfo = new FileInfo(filePath);
 
-                MessageBox.Show($"Something went wrong. Exception log: {ex.Message}");
-                throw;
+                    if (allowedExtensions.Contains(fileInfo.Extension.ToLower()))
+                    {
+                        VideoFiles.Add(new VideoFile
+                        {
+                            FileName = fileInfo.Name,
+                            FileSizeBefore = $"{fileInfo.Length / (1024 * 1024)} MB",
+                            FilePath = fileInfo.FullName,
+                            VideoStatus = VideoStatus.Ready,
+                        });
+                    }
+                }
             }
-            finally
-            {
-                btn_FilePathUser.IsEnabled = true;
-                btn_FileUploadUser.IsEnabled = true;
-                btn_StartCompression.IsEnabled = true;
-                textblock_UserFile.Text = "";
-                textblock_UserFilePath.Text = "";
-            }
+        }
 
+        private void VideoListView_KeyUp_DeleteFileFromList(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Delete)
+            {
+                var selectedItemInList = VideoListView.SelectedItems;
+                var videoFiles = selectedItemInList.Cast<VideoFile>().ToList();
+
+                foreach (VideoFile videoFile in videoFiles)
+                {
+                    VideoFiles.Remove(videoFile);
+                }
+            }
+        }
+
+        private void Button_Click_OpenVideosFolder(object sender, RoutedEventArgs e)
+        {
+            if (Directory.Exists(Constants.FilePaths.VideosFolder))
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = Constants.FilePaths.VideosFolder,
+                    UseShellExecute = true
+                };
+
+                Process.Start(startInfo);
+            } else
+            {
+                MessageBox.Show($"The video folder has not been created yet because you haven't rendered any videos.",
+                        "Directory missing",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+            }
         }
     }
 }
